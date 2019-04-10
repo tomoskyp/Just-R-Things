@@ -1,0 +1,91 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn import datasets, linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+# load the dataset
+df = pd.read_csv('C:\Personal\Paul Stats Problem\DLCO_v2.csv')
+
+
+# separate out the independent variables and the dependent variable
+X = df.iloc[:,0:3]
+#print('X original=',X)
+y = df.iloc[:,3]
+#print('y original=',y)
+
+
+# split the data into training/testing sets, using seed value and 80/20 split
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2018411,train_size=0.8, test_size=0.2)
+
+
+# need to convert y data into frames
+y_train = y_train.to_frame()
+y_test = y_test.to_frame()
+
+print('X_train raw=',X_train)
+print('y_train raw=\n',y_train)
+print('X_test raw=',X_test)
+print('y_test raw=\n',y_test)
+
+
+#save the data for use later
+X_test.to_csv('C:\Personal\Paul Stats Problem\X_test_raw.csv')
+y_test.to_csv('C:\Personal\Paul Stats Problem\y_test_raw.csv')
+
+
+# Save test mean and stddev for later denormalization
+y_test_mean = y_test.mean()
+print('y_test_mean=',y_test_mean)
+
+y_test_std = y_test.std()
+print('y_test_std=',y_test_std)
+
+
+# normalize the data: Subtract the mean, then divide by the standard deviation.
+# normalize train data
+X_train = (X_train - X_train.mean()) / X_train.std()
+print('X_train normalized=',X_train)
+y_train = (y_train - y_train.mean()) / y_train.std()
+print('y_train normalized=\n',y_train)
+
+# normalize test data
+X_test = (X_test - X_test.mean()) / X_test.std()
+print('X_test normalized=',X_test)
+y_test = (y_test - y_test.mean()) / y_test.std()
+print('y_test normalized=\n',y_test)
+
+
+# create linear regression object
+regr = linear_model.LinearRegression()
+
+# Train the model using the training sets
+regr.fit(X_train, y_train)
+
+
+# Make predictions using the testing set
+y_pred = regr.predict(X_test)
+# need to convert y_pred data into frames to print out
+y_pred = pd.DataFrame(y_pred)
+
+
+#print('X_test=\n',X_test)
+#print()
+#print('y_test=\n',y_test)
+#print()
+#print('y_pred=\n',y_pred)
+
+
+# The coefficients for the model
+print('Coefficients:', regr.coef_)
+# The mean squared error
+print("Mean squared error: %.4f" % mean_squared_error(y_test, y_pred))
+# Explained variance score: 1 is perfect prediction
+print('r2 score: %.4f' % r2_score(y_test, y_pred))
+
+
+# save data for report.  Merge manually into test_set.csv
+X_test.to_csv('C:\Personal\Paul Stats Problem\X_test.csv')
+y_test.to_csv('C:\Personal\Paul Stats Problem\y_test.csv')
+y_pred.to_csv('C:\Personal\Paul Stats Problem\y_pred.csv')
